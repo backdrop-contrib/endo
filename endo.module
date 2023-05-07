@@ -7,10 +7,10 @@
 /**
  * Implements hook_config_info().
  */
-function mymodule_config_info() {
+function endo_config_info() {
   return array(
-    'mymodule.settings' => array(
-      'label' => t('MyModule settings'),
+    'endo.settings' => array(
+      'label' => t('Enhanced Number Display settings'),
       'group' => t('Configuration'),
     ),
   );
@@ -19,15 +19,15 @@ function mymodule_config_info() {
 /**
  * Implements hook_menu().
  */
-function mymodule_menu() {
+function endo_menu() {
   return array(
-    'admin/config/system/mymodule' => array(
-      'title' => 'MyModule',
-      'description' => 'Configure MyModule.',
+    'admin/config/system/endo' => array(
+      'title' => 'Enhanced Number Display',
+      'description' => 'Configure Enhanced Number Display.',
       'page callback' => 'backdrop_get_form',
-      'page arguments' => array('mymodule_configuration_form'),
-      'access arguments' => array('administer mymodule'),
-      'file' => 'mymodule.admin.inc',
+      'page arguments' => array('endo_configuration_form'),
+      'access arguments' => array('administer Enhanced Number Display'),
+      'file' => 'endo.admin.inc',
     ),
   );
 }
@@ -35,10 +35,10 @@ function mymodule_menu() {
 /**
  * Implements hook_permission().
  */
-function mymodule_permission() {
+function endo_permission() {
   return array(
-    'administer mymodule' => array(
-      'title' => t('Administer MyModule'),
+    'administer endo' => array(
+      'title' => t('Administer Enhanced Number Display'),
     ),
   );
 }

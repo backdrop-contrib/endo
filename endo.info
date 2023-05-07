@@ -1,14 +1,14 @@
 type = module
-name = MyModule
-description = A short description of this module.
+name = Enhanced Number Display Options
+description = Provides enhanced formatting options for display of Number fields.
 backdrop = 1.x
 
 ; Link to the module's configuration page.
-configure = admin/config/system/mymodule
+configure = admin/config/system/endo
 
 ; Add custom CSS & JS files.
-stylesheets[all][] = css/mymodule.css
-scripts[] = js/mymodule.js
+stylesheets[all][] = css/endo.css
+scripts[] = js/endo.js
 
 ; List any dependencies here.
 dependencies[] = contact

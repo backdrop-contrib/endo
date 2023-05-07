@@ -1,18 +1,18 @@
 <?php
 /**
  * @file
- * Administrative page callbacks for the MyModule module.
+ * Administrative page callbacks for the Endo (Enhanced Number Display Options) module.
  */
 
 /**
- * MyModule configuration form.
+ * Endo (Enhanced Number Display Options) configuration form.
  */
-function mymodule_configuration_form($form, &$form_state) {
+function endo_configuration_form($form, &$form_state) {
   // Form values will be saved to this config file. See system_settings_form().
-  $form['#config'] = 'mymodule.settings';
+  $form['#config'] = 'endo.settings';
 
   // Use $config->get() for default values.
-  $config = config('mymodule.settings');
+  $config = config('endo.settings');
 
   $form['opinion_of_backdrop'] = array(
     '#type' => 'textfield',

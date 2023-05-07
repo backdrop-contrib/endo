@@ -1,18 +1,18 @@
 <?php
 /**
  * @file
- * Install, update, and uninstall functions for the MyModule module.
+ * Install, update, and uninstall functions for the Enhanced Number Display module.
  */
 
 /**
  * Upgrade from Drupal 7.
  */
-function mymodule_update_1000() {
+function endo_update_1000() {
   // Convert D7 variables to config.
-  $config = config('mymodule.settings');
-  $config->set('opinion_of_backdrop', update_variable_get('mymodule_opinion_drupal', 'Awesome!'));
+  $config = config('endo.settings');
+  $config->set('opinion_of_backdrop', update_variable_get('endo_opinion_drupal', 'Awesome!'));
   $config->save();
 
   // Delete D7 variables.
-  update_variable_del('mymodule_opinion_drupal');
+  update_variable_del('endo_opinion_drupal');
 }

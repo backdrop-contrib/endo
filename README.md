@@ -14,7 +14,8 @@ getting started. More detailed documentation should be moved to a GitHub wiki
 page; for example: https://github.com/backdrop-contrib/setup/wiki/Documentation.
 -->
 
-MyModule enables you to...
+Endo (Enhanced Number Display Options) enables you to...
+
 
 
 Requirements
@@ -54,7 +55,7 @@ if not used).
 -->
 
 Additional documentation is located in the Wiki:
-https://github.com/backdrop-contrib/mymodule/wiki/Documentation.
+https://github.com/backdrop-contrib/endo/wiki/Documentation.
 
 
 Issues
@@ -64,7 +65,7 @@ Link to the repo's issue queue.
 -->
 
 Bugs and Feature Requests should be reported in the Issue Queue:
-https://github.com/backdrop-contrib/mymodule/issues.
+https://github.com/backdrop-contrib/endo/issues.
 
 
 Current Maintainers
@@ -74,7 +75,7 @@ List the current maintainer(s) of the module, and note if this module needs
 new/additional maintainers.
 -->
 
-- [Your Name](https://github.com/username)
+- [ericfoy](https://github.com/ericfoy)
 - Seeking additional maintainers
 
 
@@ -88,10 +89,7 @@ libraries, list them here. You can also mention any organisations/companies who
 sponsored the module's development.
 -->
 
-- Ported to Backdrop CMS by [Your Name](https://github.com/username).
-- Originally written for Drupal by [Someone Else](https://github.com/username).
-- Based on [Some Other project](https://github.com/example).
-- Sponsored by [An Organization](https://example.org).
+- Sponsored by [Perideo LLC](https://example.org).
 
 
 License
