@@ -11,8 +11,7 @@ stylesheets[all][] = css/endo.css
 scripts[] = js/endo.js
 
 ; List any dependencies here.
-dependencies[] = contact
-
+dependencies[] = number
 ; Find suggested packages and tags at: https://docs.backdropcms.org/documentation/module-packages-and-tags
 package = User interface
 tags[] = Administration
