@@ -6,7 +6,7 @@
 
 /**
  * Endo (Enhanced Number Display Options) configuration form.
- */
+ * /
 function endo_configuration_form($form, &$form_state) {
   // Form values will be saved to this config file. See system_settings_form().
   $form['#config'] = 'endo.settings';
@@ -22,3 +22,6 @@ function endo_configuration_form($form, &$form_state) {
 
   return system_settings_form($form);
 }
+
+*/
+

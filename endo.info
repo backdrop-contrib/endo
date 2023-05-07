@@ -1,19 +1,19 @@
 type = module
-name = Enhanced Number Display Options
-description = Provides enhanced formatting options for display of Number fields.
+name = Enhanced Number Display Options (Endo)
+description = Provides enhanced display formatting options for Number fields.
 backdrop = 1.x
 
 ; Link to the module's configuration page.
 configure = admin/config/system/endo
 
 ; Add custom CSS & JS files.
-stylesheets[all][] = css/endo.css
-scripts[] = js/endo.js
+;stylesheets[all][] = css/endo.css
+;scripts[] = js/endo.js
 
 ; List any dependencies here.
-dependencies[] = contact
+dependencies[] = number
 
 ; Find suggested packages and tags at: https://docs.backdropcms.org/documentation/module-packages-and-tags
 package = User interface
 tags[] = Administration
-tags[] = Images
+;tags[] = Images

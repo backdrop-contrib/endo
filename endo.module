@@ -1,12 +1,164 @@
 <?php
 /**
  * @file
- * A short description of this module.
+ * Endo - Enhanced Number Display Options.
  */
 
 /**
- * Implements hook_config_info().
+ * Implements hook_field_info_alter().
  */
+
+function endo_field_info_alter(&$info) {
+  foreach ($info as $field_type => $field_type_info) {
+    if ($field_type = 'number_decimal') {
+      $info[$field_type]['instance_settings'] += array('zero_display' => '',
+	                                                   'trim_leading' => '',
+								                       'trim_trailing' => '',
+								                       'trim_decimal' => '',
+                                                      );
+    }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function endo_number_field_instance_settings_form_alter(&$form, $form_state) {
+  
+  $form['zero_display'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Zero Value Display'),
+    '#default_value' => $settings['zero_display'],
+    '#size' => 60,
+    '#description' => t("Define a string that should be displayed if the value of the field is zero. Leave blank for default. This is useful in the case that suppressing leading and trailing zeros results in a lone decimal or null display."),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_info_alter(&$info).
+ */
+function endo_field_formatter_info_alter(&$info) {
+  foreach ($info as $field_type => $field_type_info) {
+    if ($field_type = 'number_decimal') {
+      $info[$field_type]['settings'] += array('trim_leading' => 0,
+								              'trim_trailing' => 0,
+								              'trim_decimal' => 0,
+                                             );
+    }
+  }
+}
+    
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function endo_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $element = array();
+
+  if ($display['type'] == 'number_decimal' || $display['type'] == 'number_integer') {
+    $options = array(
+      ''  => t('<none>'),
+      '.' => t('Decimal point'),
+      ',' => t('Comma'),
+      ' ' => t('Space'),
+    );
+    $element['thousand_separator'] = array(
+      '#type' => 'select',
+      '#title' => t('Thousand marker'),
+      '#options' => $options,
+      '#default_value' => $settings['thousand_separator'],
+    );
+
+    if ($display['type'] == 'number_decimal') {
+      $element['decimal_separator'] = array(
+        '#type' => 'select',
+        '#title' => t('Decimal marker'),
+        '#options' => array('.' => t('Decimal point'), ',' => t('Comma')),
+        '#default_value' => $settings['decimal_separator'],
+      );
+      $element['scale'] = array(
+        '#type' => 'select',
+        '#title' => t('Scale'),
+        '#options' => backdrop_map_assoc(range(0, 10)),
+        '#default_value' => $settings['scale'],
+        '#description' => t('The number of digits to the right of the decimal.'),
+      );	
+      $element['trim_leading'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Suppress leading zero before decimal.'),
+        '#default_value' => $settings['trim_leading'],
+      );
+	
+      $element['trim_trailing'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Suppress trailing zeros after decimal.'),
+        '#default_value' => $settings['trim_trailing'],
+      );
+	
+      $element['trim_decimal'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Suppress decimal for integer value.'),
+        '#default_value' => $settings['trim_decimal'],
+      );	
+    }
+
+    $element['prefix_suffix'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Display prefix and suffix.'),
+      '#default_value' => $settings['prefix_suffix'],
+    );
+  }
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function endo_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  $settings = $display['settings'];
+
+  switch ($display['type']) {
+    case 'number_integer':
+    case 'number_decimal':
+      foreach ($items as $delta => $item) {
+        $output = number_format($item['value'], $settings['scale'], $settings['decimal_separator'], $settings['thousand_separator']);
+        if (isset($instance['settings']['zero_display']) && $item['value'] == 0) {
+          $output = $instance['settings']['zero_display'];	
+        }
+        else {
+          if (isset($settings['trim_leading']) && $settings['trim_leading']) $output = ltrim($output, "0");
+          if (isset($settings['trim_trailing']) && $settings['trim_trailing']) $output = rtrim($output, "0");	
+          if (isset($settings['trim_decimal']) && $settings['trim_decimal']) $output = rtrim($output, $settings['decimal_separator']);	
+        }	
+        if ($settings['prefix_suffix']) {
+          $prefixes = isset($instance['settings']['prefix']) ? array_map('field_filter_xss', explode('|', $instance['settings']['prefix'])) : array('');
+          $suffixes = isset($instance['settings']['suffix']) ? array_map('field_filter_xss', explode('|', $instance['settings']['suffix'])) : array('');
+          $prefix = (count($prefixes) > 1) ? format_plural($item['value'], $prefixes[0], $prefixes[1]) : $prefixes[0];
+          $suffix = (count($suffixes) > 1) ? format_plural($item['value'], $suffixes[0], $suffixes[1]) : $suffixes[0];
+          $output = $prefix . $output . $suffix;
+        }
+        $element[$delta] = array('#markup' => $output);
+      }
+      break;
+
+    case 'number_unformatted':
+      foreach ($items as $delta => $item) {
+        $element[$delta] = array('#markup' => $item['value']);
+      }
+      break;
+  }
+
+  return $element;
+}
+
+
+
+/**
+ * Implements hook_config_info().
+ * /
 function endo_config_info() {
   return array(
     'endo.settings' => array(
@@ -18,7 +170,7 @@ function endo_config_info() {
 
 /**
  * Implements hook_menu().
- */
+ * /
 function endo_menu() {
   return array(
     'admin/config/system/endo' => array(
@@ -34,7 +186,7 @@ function endo_menu() {
 
 /**
  * Implements hook_permission().
- */
+ * /
 function endo_permission() {
   return array(
     'administer endo' => array(
@@ -42,3 +194,5 @@ function endo_permission() {
     ),
   );
 }
+
+*/
