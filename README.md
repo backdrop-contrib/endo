@@ -1,4 +1,4 @@
-MyModule
+Enhanced Number Display Options
 ========
 <!--
 The first paragraph of this file should be kept short as it will be used as the
