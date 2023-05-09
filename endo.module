@@ -65,6 +65,9 @@ function endo_field_formatter_settings_summary($field, $instance, $view_mode) {
   $summary = array();
   if ($display['type'] == 'number_decimal' || $display['type'] == 'number_integer') {
     $summary[] = number_format(1234.1234567890, $settings['scale'], $settings['decimal_separator'], $settings['thousand_separator']);
+    $summary[] = 'trim_leading';
+    $summary[] = 'trim_trailing';
+    $summary[] = 'trim_decimal';
     if ($settings['prefix_suffix']) {
       $summary[] = t('Display with prefix and suffix.');
     }
