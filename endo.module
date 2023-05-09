@@ -56,6 +56,24 @@ function endo_field_formatter_info_alter(&$info) {
 }
 
 /**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function endo_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+
+  $summary = array();
+  if ($display['type'] == 'number_decimal' || $display['type'] == 'number_integer') {
+    $summary[] = number_format(1234.1234567890, $settings['scale'], $settings['decimal_separator'], $settings['thousand_separator']);
+    if ($settings['prefix_suffix']) {
+      $summary[] = t('Display with prefix and suffix.');
+    }
+  }
+
+  return implode('<br />', $summary);
+}
+
+/**
  * Implements hook_field_formatter_info().
  */
 function endo_field_formatter_info() {
