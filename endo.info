@@ -4,7 +4,7 @@ description = Provides enhanced display formatting options for Number fields.
 backdrop = 1.x
 
 ; Link to the module's configuration page.
-;configure = admin/config/system/endo
+configure = admin/config/system/endo
 
 ; Add custom CSS & JS files.
 ;stylesheets[all][] = css/endo.css

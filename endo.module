@@ -4,56 +4,6 @@
  * Endo - Enhanced Number Display Options.
  */
 
-/*
-hook_field_formatter_info() - defines the formatter
-hook_field_formatter_settings_form() - provides your settings form
-hook_field_formatter_settings_summary() - provides a settings summary
-hook_field_formatter_view()  - actually performs the trimming
-*/
-
-/**
- * Implements hook_field_info_alter().
- * /
-
-function endo_field_info_alter(&$info) {
-  foreach ($info as $field_type => $field_type_info) {
-    if ($field_type = 'number_decimal') {
-      $info[$field_type]['instance_settings'] += array('zero_display' => '',
-	                                                   'trim_leading' => '',
-								                       'trim_trailing' => '',
-								                       'trim_decimal' => '',
-                                                      );
-    }
-  }
-}
-
-/**
- * Implements hook_form_FORM_ID_alter().
- * /
-function endo_number_field_instance_settings_form_alter(&$form, $form_state) {
-  
-  $form['zero_display'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Zero Value Display'),
-    '#default_value' => $settings['zero_display'],
-    '#size' => 60,
-    '#description' => t("Define a string that should be displayed if the value of the field is zero. Leave blank for default. This is useful in the case that suppressing leading and trailing zeros results in a lone decimal or null display."),
-  );
-}
-
-/**
- * Implements hook_field_formatter_info_alter(&$info).
- * /
-function endo_field_formatter_info_alter(&$info) {
-  foreach (&$info as $field_type => $field_type_info) {
-    if ($field_type = 'number_decimal') {
-      &$info[$field_type]['settings'] += array('trim_leading' => 0,
-								              'trim_trailing' => 0,
-								              'trim_decimal' => 0,
-                                             );
-    }
-  }
-}
 
 /**
  * Implements hook_field_formatter_settings_summary().
@@ -228,7 +178,7 @@ function endo_field_formatter_view($entity_type, $entity, $field, $instance, $la
 
 /**
  * Implements hook_config_info().
- * /
+ */
 function endo_config_info() {
   return array(
     'endo.settings' => array(
@@ -240,7 +190,7 @@ function endo_config_info() {
 
 /**
  * Implements hook_menu().
- * /
+ */
 function endo_menu() {
   return array(
     'admin/config/system/endo' => array(
@@ -256,7 +206,7 @@ function endo_menu() {
 
 /**
  * Implements hook_permission().
- * /
+ */
 function endo_permission() {
   return array(
     'administer endo' => array(
@@ -265,4 +215,3 @@ function endo_permission() {
   );
 }
 
-*/
