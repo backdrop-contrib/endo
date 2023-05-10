@@ -4,6 +4,14 @@
  * Endo - Enhanced Number Display Options.
  */
 
+function endo_field_formatter_info_alter(&$info) {
+  $info['number_decimal']['module'] = 'endo'; // not sure whether I need this.
+  $info['number_decimal']['settings'] += array('trim_leading' => '',
+		                                       'trim_trailing' => '',
+		                                       'trim_decimal' => '',
+		                                       'min_scale' => 0,
+		                                      );
+}
 
 /**
  * Implements hook_field_formatter_settings_summary().
@@ -13,14 +21,16 @@ function endo_field_formatter_settings_summary($field, $instance, $view_mode) {
   $settings = $display['settings'];
 
   $summary = array();
-  if ($display['type'] == 'number_decimal' || $display['type'] == 'number_integer') {
+  if ($display['type'] == 'number_decimal') {
     $summary[] = number_format(1234.1234567890, $settings['scale'], $settings['decimal_separator'], $settings['thousand_separator']);
-    $summary[] = t('trim_leading');
-    $summary[] = t('trim_trailing');
-    $summary[] = t('trim_decimal');
-    if ($settings['prefix_suffix']) {
-      $summary[] = t('Display with prefix and suffix.');
-    }
+    if ($settings['prefix_suffix']) $summary[] = t('Display with prefix and suffix.');
+    if ($settings['trim_trailing']) $summary[] = t('Trailing zeros are suppressed');
+    if ($settings['trim_leading']) $summary[] = t('Leading zeros are suppressed');
+    if ($settings['trim_decimal']) $summary[] = t('Trailing decimal is suppressed (integer format)');
+  }
+  if ($display['type'] == 'number_integer') {
+    $summary[] = number_format(1234.1234567890, $settings['scale'], $settings['decimal_separator'], $settings['thousand_separator']);
+    if ($settings['prefix_suffix']) $summary[] = t('Display with prefix and suffix.');
   }
 
   return implode('<br />', $summary);
@@ -28,7 +38,7 @@ function endo_field_formatter_settings_summary($field, $instance, $view_mode) {
 
 /**
  * Implements hook_field_formatter_info().
- */
+ * /
 function endo_field_formatter_info() {
   return array(
     // The 'Default' formatter is different for integer fields on the one hand,
@@ -55,9 +65,9 @@ function endo_field_formatter_info() {
         'thousand_separator' => '',
         'decimal_separator' => '.',
         'scale' => 2,
-        'trim_leading' => 0,
-		'trim_trailing' => 0,
-		'trim_decimal' => 0,
+        'trim_leading' => '',
+		'trim_trailing' => '',
+		'trim_decimal' => '',
         'prefix_suffix' => TRUE,
       ),
     ),
@@ -76,10 +86,15 @@ function endo_field_formatter_settings_form($field, $instance, $view_mode, $form
   $settings = $display['settings'];
   $element = array();
 
+  $element['prefix_suffix'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Display prefix and suffix.'),
+      '#default_value' => $settings['prefix_suffix'],
+    );
   if ($display['type'] == 'number_decimal' || $display['type'] == 'number_integer') {
     $options = array(
       ''  => t('<none>'),
-      '.' => t('Decimal point'),
+      '.' => t('Period'),
       ',' => t('Comma'),
       ' ' => t('Space'),
     );
@@ -94,40 +109,42 @@ function endo_field_formatter_settings_form($field, $instance, $view_mode, $form
       $element['decimal_separator'] = array(
         '#type' => 'select',
         '#title' => t('Decimal marker'),
-        '#options' => array('.' => t('Decimal point'), ',' => t('Comma')),
+        '#options' => array('.' => t('Period'), ',' => t('Comma')),
         '#default_value' => $settings['decimal_separator'],
       );
-      $element['scale'] = array(
-        '#type' => 'select',
-        '#title' => t('Scale'),
-        '#options' => backdrop_map_assoc(range(0, 10)),
-        '#default_value' => $settings['scale'],
-        '#description' => t('The number of digits to the right of the decimal.'),
-      );	
       $element['trim_leading'] = array(
         '#type' => 'checkbox',
-        '#title' => t('Suppress leading zero before decimal.'),
+        '#title' => t('Suppress leading zero before decimal; e.g: output "0.12" as ".12"'),
         '#default_value' => $settings['trim_leading'],
       );
-	
+      $element['trim_decimal'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Suppress decimal point for integer value; e.g: output "23." as "23"'),
+        '#default_value' => $settings['trim_decimal'],
+        '#description' => t('This only affects if Min. decimal places (below) is set to zero.'),
+      );	
+	  $element['scale'] = array(
+        '#type' => 'select',
+        '#title' => t('Max. decimal places'),
+        '#options' => backdrop_map_assoc(range(0, 10)),
+        '#default_value' => $settings['scale'],
+        '#description' => t('The maximum number of digits to the right of the decimal.'),
+      );	
       $element['trim_trailing'] = array(
         '#type' => 'checkbox',
         '#title' => t('Suppress trailing zeros after decimal.'),
         '#default_value' => $settings['trim_trailing'],
+        '#description' => t('Zeros will be trimmed off, only down to the number of places set below.'),
       );
-	
-      $element['trim_decimal'] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Suppress decimal for integer value.'),
-        '#default_value' => $settings['trim_decimal'],
+      $element['min_scale'] = array(
+        '#type' => 'select',
+        '#title' => t('Min. decimal places'),
+        '#options' => backdrop_map_assoc(range(0, 10)),
+        '#default_value' => $settings['min_scale'],
+        '#description' => t('The minimum number of digits to the right of the decimal, even if they are zeros.'),
       );	
+	
     }
-
-    $element['prefix_suffix'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Display prefix and suffix.'),
-      '#default_value' => $settings['prefix_suffix'],
-    );
   }
 
   return $element;
@@ -139,6 +156,7 @@ function endo_field_formatter_settings_form($field, $instance, $view_mode, $form
 function endo_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
   $settings = $display['settings'];
+  $point = $settings['decimal_separator'];
 
   switch ($display['type']) {
     case 'number_integer':
@@ -150,8 +168,11 @@ function endo_field_formatter_view($entity_type, $entity, $field, $instance, $la
         }
         else {
           if (isset($settings['trim_leading']) && $settings['trim_leading']) $output = ltrim($output, "0");
-          if (isset($settings['trim_trailing']) && $settings['trim_trailing']) $output = rtrim($output, "0");	
-          if (isset($settings['trim_decimal']) && $settings['trim_decimal']) $output = rtrim($output, $settings['decimal_separator']);	
+          if (isset($settings['trim_trailing']) && $settings['trim_trailing']) {
+            $output = rtrim($output, "0");
+            while (strlen($output) - strrpos($output, $point) <= $settings['min_scale']) $output = $output . '0';
+          }  
+          if (isset($settings['trim_decimal']) && $settings['trim_decimal']) $output = rtrim($output, $point);
         }	
         if ($settings['prefix_suffix']) {
           $prefixes = isset($instance['settings']['prefix']) ? array_map('field_filter_xss', explode('|', $instance['settings']['prefix'])) : array('');
