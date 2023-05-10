@@ -24,9 +24,10 @@ function endo_field_formatter_settings_summary($field, $instance, $view_mode) {
   if ($display['type'] == 'number_decimal') {
     $summary[] = number_format(1234.1234567890, $settings['scale'], $settings['decimal_separator'], $settings['thousand_separator']);
     if ($settings['prefix_suffix']) $summary[] = t('Display with prefix and suffix.');
+    $summary[] = t('Decimal places (max/min) = ') . $settings['scale'] . t(' / ') . $settings['min_scale'];
     if ($settings['trim_trailing']) $summary[] = t('Trailing zeros are suppressed');
-    if ($settings['trim_leading']) $summary[] = t('Leading zeros are suppressed');
-    if ($settings['trim_decimal']) $summary[] = t('Trailing decimal is suppressed (integer format)');
+    if ($settings['trim_leading']) $summary[] = t('Leading zero is suppressed');
+    if ($settings['min_scale'] = 0) if ($settings['trim_decimal']) $summary[] = t('Trailing decimal is suppressed (integer format)');
   }
   if ($display['type'] == 'number_integer') {
     $summary[] = number_format(1234.1234567890, $settings['scale'], $settings['decimal_separator'], $settings['thousand_separator']);
@@ -38,7 +39,7 @@ function endo_field_formatter_settings_summary($field, $instance, $view_mode) {
 
 /**
  * Implements hook_field_formatter_info().
- * /
+ * / <--intentional space on left side of slash comments out this function.
 function endo_field_formatter_info() {
   return array(
     // The 'Default' formatter is different for integer fields on the one hand,
@@ -161,6 +162,8 @@ function endo_field_formatter_view($entity_type, $entity, $field, $instance, $la
   switch ($display['type']) {
     case 'number_integer':
     case 'number_decimal':
+//    case 'number_float':
+        
       foreach ($items as $delta => $item) {
         $output = number_format($item['value'], $settings['scale'], $settings['decimal_separator'], $settings['thousand_separator']);
         if (isset($instance['settings']['zero_display']) && $item['value'] == 0) {
@@ -190,6 +193,7 @@ function endo_field_formatter_view($entity_type, $entity, $field, $instance, $la
         $element[$delta] = array('#markup' => $item['value']);
       }
       break;
+      
   }
 
   return $element;
