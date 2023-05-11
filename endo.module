@@ -8,8 +8,10 @@ function endo_field_formatter_info_alter(&$info) {
   $info['number_decimal']['module'] = 'endo'; // not sure whether I need this.
   $info['number_decimal']['settings'] += array('trim_leading' => '',
 		                                       'trim_trailing' => '',
-		                                       'trim_decimal' => '',
+		                                       'trim_decimal' => 'TRUE',
 		                                       'min_scale' => 0,
+                                               'zero_display' => '',
+                                               'neg_paren' => '',
 		                                      );
 }
 
@@ -27,7 +29,9 @@ function endo_field_formatter_settings_summary($field, $instance, $view_mode) {
     $summary[] = t('Decimal places (max/min) = ') . $settings['scale'] . t(' / ') . $settings['min_scale'];
     if ($settings['trim_trailing']) $summary[] = t('Trailing zeros are suppressed');
     if ($settings['trim_leading']) $summary[] = t('Leading zero is suppressed');
+    if ($settings['zero_display']) $summary[] = t('Zero value displayed as "') . $settings['zero_display'] . t('"');
     if ($settings['min_scale'] = 0) if ($settings['trim_decimal']) $summary[] = t('Trailing decimal is suppressed (integer format)');
+    if ($settings['neg_paren'] = 0) $summary[] = t('Negative values are output in parentheses');
   }
   if ($display['type'] == 'number_integer') {
     $summary[] = number_format(1234.1234567890, $settings['scale'], $settings['decimal_separator'], $settings['thousand_separator']);
@@ -144,6 +148,12 @@ function endo_field_formatter_settings_form($field, $instance, $view_mode, $form
         '#default_value' => $settings['min_scale'],
         '#description' => t('The minimum number of digits to the right of the decimal, even if they are zeros.'),
       );	
+      $element['neg_paren'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Use parentheses instead of negative sign.'),
+        '#default_value' => $settings['neg_paren'],
+        '#description' => t('Negative values will be output in parentheses ("-32.21" => "(32.21)"'),
+      );
 	
     }
   }
@@ -176,6 +186,10 @@ function endo_field_formatter_view($entity_type, $entity, $field, $instance, $la
             while (strlen($output) - strrpos($output, $point) <= $settings['min_scale']) $output = $output . '0';
           }  
           if (isset($settings['trim_decimal']) && $settings['trim_decimal']) $output = rtrim($output, $point);
+          if ($settings['neg_paren'] && $output < 0) {
+            $output = rtrim($output, "-");
+            $output = '(' . $output . ')';
+          }
         }	
         if ($settings['prefix_suffix']) {
           $prefixes = isset($instance['settings']['prefix']) ? array_map('field_filter_xss', explode('|', $instance['settings']['prefix'])) : array('');
