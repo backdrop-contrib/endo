@@ -192,7 +192,7 @@ function endo_field_formatter_view($entity_type, $entity, $field, $instance, $la
           }  
           if (/*isset($settings['trim_decimal']) && */ $settings['trim_decimal']) $output = rtrim($output, $point);
           if ($settings['neg_paren'] && $output < 0) {
-            $output = rtrim($output, "-");
+            $output = ltrim($output, "-");
             $output = '(' . $output . ')';
           }
         }	
