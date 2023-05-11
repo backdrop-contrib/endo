@@ -11,9 +11,9 @@ configure = admin/config/system/endo
 ;scripts[] = js/endo.js
 
 ; List any dependencies here.
-;dependencies[] = number
+
 
 ; Find suggested packages and tags at: https://docs.backdropcms.org/documentation/module-packages-and-tags
 package = Fields
-;tags[] = Administration
-;tags[] = Images
+tags[] = User Interface
+tags[] = Appearance

@@ -14,7 +14,8 @@ getting started. More detailed documentation should be moved to a GitHub wiki
 page; for example: https://github.com/backdrop-contrib/setup/wiki/Documentation.
 -->
 
-Endo (Enhanced Number Display Options) enables you to...
+Enhanced Number Display Options (endo) enables you to precisely define the
+display format of number fields.
 
 
 
@@ -24,10 +25,8 @@ Requirements
 List any dependencies here. Remove this section if not needed.
 -->
 
-This module requires that the following modules are also enabled:
-
-- [Example module](https://github.com/backdrop-contrib/example_module)
-- [Dummy library](https://github.com/backdrop-contrib/dummy_library)
+In order for this module to be useful, the Number Field module (in core) 
+must be enabled.
 
 
 Installation
@@ -40,10 +39,6 @@ necessary.
 - Install this module using the official Backdrop CMS instructions at
   https://docs.backdropcms.org/documentation/extend-with-modules.
 
-- Visit the configuration page under Administration > Configuration > System >
-  MyModule (admin/config/system/mymodule) and enter the required information.
-
-- Additional steps go here...
 
 
 Documentation
@@ -54,8 +49,11 @@ this section if not needed (and consider disabling the wiki in the repo settings
 if not used).
 -->
 
-Additional documentation is located in the Wiki:
+Additional documentation (once developed) will be located in the Wiki:
 https://github.com/backdrop-contrib/endo/wiki/Documentation.
+
+Meanwhile, simply enable this module and notice the Enhance Number field
+Display Options which become available for integer and decimal fields.
 
 
 Issues
@@ -76,7 +74,6 @@ new/additional maintainers.
 -->
 
 - [ericfoy](https://github.com/ericfoy)
-- Seeking additional maintainers
 
 
 Credits
@@ -89,7 +86,7 @@ libraries, list them here. You can also mention any organisations/companies who
 sponsored the module's development.
 -->
 
-- Sponsored by [Perideo LLC](https://example.org).
+- Sponsored by [Perideo LLC].
 
 
 License
