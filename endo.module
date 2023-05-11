@@ -43,7 +43,7 @@ function endo_field_formatter_settings_summary($field, $instance, $view_mode) {
 
 /**
  * Implements hook_field_formatter_info().
- * / <--intentional space on left side of slash comments out this function.
+ * / <--intentional space on left side of slash comments out this function. So far, it's apparently not needed.
 function endo_field_formatter_info() {
   return array(
     // The 'Default' formatter is different for integer fields on the one hand,
@@ -92,12 +92,25 @@ function endo_field_formatter_settings_form($field, $instance, $view_mode, $form
   $element = array();
 
   $element['prefix_suffix'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Display prefix and suffix.'),
-      '#default_value' => $settings['prefix_suffix'],
-    );
+    '#type' => 'checkbox',
+    '#title' => t('Display prefix and suffix.'),
+    '#default_value' => $settings['prefix_suffix'],
+  );
+  $element['neg_paren'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use parentheses for negative value; e.g: output "-32.21" as "(32.21)"'),
+    '#default_value' => $settings['neg_paren'],
+  );
+  $element['zero_display'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Text to display for Zero value.'),
+    '#default_value' => $settings['zero_display'],
+    '#description' => t('Enter text to override the output of zero.'),
+  );
+
   if ($display['type'] == 'number_decimal' || $display['type'] == 'number_integer') {
-    $options = array(
+    
+    $sep_options = array(
       ''  => t('<none>'),
       '.' => t('Period'),
       ',' => t('Comma'),
@@ -106,7 +119,7 @@ function endo_field_formatter_settings_form($field, $instance, $view_mode, $form
     $element['thousand_separator'] = array(
       '#type' => 'select',
       '#title' => t('Thousand marker'),
-      '#options' => $options,
+      '#options' => $sep_options,
       '#default_value' => $settings['thousand_separator'],
     );
 
@@ -117,17 +130,6 @@ function endo_field_formatter_settings_form($field, $instance, $view_mode, $form
         '#options' => array('.' => t('Period'), ',' => t('Comma')),
         '#default_value' => $settings['decimal_separator'],
       );
-      $element['trim_leading'] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Suppress leading zero before decimal; e.g: output "0.12" as ".12"'),
-        '#default_value' => $settings['trim_leading'],
-      );
-      $element['trim_decimal'] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Suppress decimal point for integer value; e.g: output "23." as "23"'),
-        '#default_value' => $settings['trim_decimal'],
-        '#description' => t('This only affects if Min. decimal places (below) is set to zero.'),
-      );	
 	  $element['scale'] = array(
         '#type' => 'select',
         '#title' => t('Max. decimal places'),
@@ -135,12 +137,6 @@ function endo_field_formatter_settings_form($field, $instance, $view_mode, $form
         '#default_value' => $settings['scale'],
         '#description' => t('The maximum number of digits to the right of the decimal.'),
       );	
-      $element['trim_trailing'] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Suppress trailing zeros after decimal.'),
-        '#default_value' => $settings['trim_trailing'],
-        '#description' => t('Zeros will be trimmed off, only down to the number of places set below.'),
-      );
       $element['min_scale'] = array(
         '#type' => 'select',
         '#title' => t('Min. decimal places'),
@@ -148,16 +144,25 @@ function endo_field_formatter_settings_form($field, $instance, $view_mode, $form
         '#default_value' => $settings['min_scale'],
         '#description' => t('The minimum number of digits to the right of the decimal, even if they are zeros.'),
       );	
-      $element['neg_paren'] = array(
+      $element['trim_leading'] = array(
         '#type' => 'checkbox',
-        '#title' => t('Use parentheses instead of negative sign.'),
-        '#default_value' => $settings['neg_paren'],
-        '#description' => t('Negative values will be output in parentheses ("-32.21" => "(32.21)"'),
+        '#title' => t('Suppress leading zero before decimal; e.g: output "0.12" as ".12"'),
+        '#default_value' => $settings['trim_leading'],
       );
-	
+      $element['trim_trailing'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Suppress trailing zeros after decimal.'),
+        '#default_value' => $settings['trim_trailing'],
+        '#description' => t('Zeros will be trimmed off, only down to the Min. decimal places set above.'),
+      );
+      $element['trim_decimal'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Suppress decimal point for integer value; e.g: output "23." as "23"'),
+        '#default_value' => $settings['trim_decimal'],
+        '#description' => t('This only affects if Min. decimal places (above) is set to zero.'),
+      );	
     }
   }
-
   return $element;
 }
 
@@ -176,16 +181,16 @@ function endo_field_formatter_view($entity_type, $entity, $field, $instance, $la
         
       foreach ($items as $delta => $item) {
         $output = number_format($item['value'], $settings['scale'], $settings['decimal_separator'], $settings['thousand_separator']);
-        if (isset($instance['settings']['zero_display']) && $item['value'] == 0) {
-          $output = $instance['settings']['zero_display'];	
+        if (isset($settings['zero_display']) && $item['value'] == 0) {
+          $output = $settings['zero_display'];	
         }
         else {
-          if (isset($settings['trim_leading']) && $settings['trim_leading']) $output = ltrim($output, "0");
-          if (isset($settings['trim_trailing']) && $settings['trim_trailing']) {
+          if (/*isset($settings['trim_leading']) && */ $settings['trim_leading']) $output = ltrim($output, "0");
+          if (/*isset($settings['trim_trailing']) && */ $settings['trim_trailing']) {
             $output = rtrim($output, "0");
             while (strlen($output) - strrpos($output, $point) <= $settings['min_scale']) $output = $output . '0';
           }  
-          if (isset($settings['trim_decimal']) && $settings['trim_decimal']) $output = rtrim($output, $point);
+          if (/*isset($settings['trim_decimal']) && */ $settings['trim_decimal']) $output = rtrim($output, $point);
           if ($settings['neg_paren'] && $output < 0) {
             $output = rtrim($output, "-");
             $output = '(' . $output . ')';
@@ -213,7 +218,7 @@ function endo_field_formatter_view($entity_type, $entity, $field, $instance, $la
   return $element;
 }
 
-
+/**** The following are here for future development of the module. For now, they don't really do anything. ****/
 
 /**
  * Implements hook_config_info().
