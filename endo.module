@@ -4,8 +4,15 @@
  * Endo - Enhanced Number Display Options.
  */
 
+/**
+ * Implements hook_field_formatter_info_alter().
+ */
 function endo_field_formatter_info_alter(&$info) {
-  $info['number_decimal']['module'] = 'endo'; // not sure whether I need this.
+  $info['number_integer']['module'] = 'endo';
+  $info['number_integer']['settings'] += array('zero_display' => '',
+                                               'neg_paren' => '',
+		                                      );
+  $info['number_decimal']['module'] = 'endo';
   $info['number_decimal']['settings'] += array('trim_leading' => '',
 		                                       'trim_trailing' => '',
 		                                       'trim_decimal' => 'TRUE',
@@ -24,63 +31,106 @@ function endo_field_formatter_settings_summary($field, $instance, $view_mode) {
 
   $summary = array();
   if ($display['type'] == 'number_decimal') {
-    $summary[] = number_format(1234.1234567890, $settings['scale'], $settings['decimal_separator'], $settings['thousand_separator']);
-    if ($settings['prefix_suffix']) $summary[] = t('Display with prefix and suffix.');
+    $sample_p = _endo_render_decimal(4321.1234567890, $settings, $instance);
+    $sample_n = _endo_render_decimal(-4321.1234567890, $settings, $instance);
+    $sample_z = _endo_render_decimal(0, $settings, $instance);
+    $summary[] = "$sample_p \u{3000}neg: $sample_n \u{3000}zero: $sample_z";
     $summary[] = t('Decimal places (max/min) = ') . $settings['scale'] . t(' / ') . $settings['min_scale'];
     if ($settings['trim_trailing']) $summary[] = t('Trailing zeros are suppressed');
     if ($settings['trim_leading']) $summary[] = t('Leading zero is suppressed');
-    if ($settings['zero_display']) $summary[] = t('Zero value displayed as "') . $settings['zero_display'] . t('"');
     if ($settings['min_scale'] = 0) if ($settings['trim_decimal']) $summary[] = t('Trailing decimal is suppressed (integer format)');
-    if ($settings['neg_paren'] = 0) $summary[] = t('Negative values are output in parentheses');
   }
   if ($display['type'] == 'number_integer') {
-    $summary[] = number_format(1234.1234567890, $settings['scale'], $settings['decimal_separator'], $settings['thousand_separator']);
-    if ($settings['prefix_suffix']) $summary[] = t('Display with prefix and suffix.');
+    $sample_p = _endo_render_integer(4321.1234567890, $settings, $instance);
+    $sample_n = _endo_render_integer(-4321.1234567890, $settings, $instance);
+    $sample_z = _endo_render_integer(0, $settings, $instance);
+    $summary[] = "$sample_p \u{3000}neg: $sample_n \u{3000}zero: $sample_z"; // \u{3000} = wide space
   }
-
   return implode('<br />', $summary);
+}
+  
+/**
+ * The _endo_render_* functions are where the magic happens...
+ *   Some code is duplicated in these two functions. This is purposeful, as it makes the whole
+ *   thing more easy to understand, plus: separating out the duplicated code for the sake of
+ *   elegance would complicate the thread of execution and convolution of function calls.
+ *   Sometimes Brute Force prevails.
+ */
+function _endo_render_integer($input, $settings, $instance) { // $input is the discrete scalar value to render
+  $output = number_format($input, $settings['scale'], $settings['decimal_separator'], $settings['thousand_separator']);
+  if ($settings['zero_display'] && $input == 0) {
+    $output = $settings['zero_display'];	
+  }
+  elseif ($settings['neg_paren'] && $output < 0) {
+    $output = ltrim($output, "-");
+    $output = '(' . $output . ')';
+  }
+  if ($settings['prefix_suffix']) {
+    $prefixes = isset($instance['settings']['prefix']) ? array_map('field_filter_xss', explode('|', $instance['settings']['prefix'])) : array('');
+    $suffixes = isset($instance['settings']['suffix']) ? array_map('field_filter_xss', explode('|', $instance['settings']['suffix'])) : array('');
+    $prefix = (count($prefixes) > 1) ? format_plural($item['value'], $prefixes[0], $prefixes[1]) : $prefixes[0];
+    $suffix = (count($suffixes) > 1) ? format_plural($item['value'], $suffixes[0], $suffixes[1]) : $suffixes[0];
+    $output = $prefix . $output . $suffix;
+  }
+  return $output;
+}
+
+function _endo_render_decimal($input, $settings, $instance) { // $input is the discrete scalar value to render
+  $point = $settings['decimal_separator']; // placeholder for the decimal character, makes later expressions more concise.
+
+  $output = number_format($input, $settings['scale'], $settings['decimal_separator'], $settings['thousand_separator']);
+  if ($settings['zero_display'] && $input == 0) {
+    $output = $settings['zero_display'];	
+  }
+  else {
+    if ($settings['trim_leading']) $output = ltrim($output, "0");
+    if ($settings['trim_trailing']) {
+      $output = rtrim($output, "0");
+      while (strlen($output) - strrpos($output, $point) <= $settings['min_scale']) $output = $output . '0';
+    }  
+    if ($settings['trim_decimal']) $output = rtrim($output, $point);
+    if ($settings['neg_paren'] && $output < 0) {
+      $output = ltrim($output, "-");
+      $output = '(' . $output . ')';
+    }
+  }	
+  if ($settings['prefix_suffix']) {
+    $prefixes = isset($instance['settings']['prefix']) ? array_map('field_filter_xss', explode('|', $instance['settings']['prefix'])) : array('');
+    $suffixes = isset($instance['settings']['suffix']) ? array_map('field_filter_xss', explode('|', $instance['settings']['suffix'])) : array('');
+    $prefix = (count($prefixes) > 1) ? format_plural($item['value'], $prefixes[0], $prefixes[1]) : $prefixes[0];
+    $suffix = (count($suffixes) > 1) ? format_plural($item['value'], $suffixes[0], $suffixes[1]) : $suffixes[0];
+    $output = $prefix . $output . $suffix;
+  }
+  return $output;
 }
 
 /**
- * Implements hook_field_formatter_info().
- * / <--intentional space on left side of slash comments out this function. So far, it's apparently not needed.
-function endo_field_formatter_info() {
-  return array(
-    // The 'Default' formatter is different for integer fields on the one hand,
-    // and for decimal and float fields on the other hand, in order to be able
-    // to use different default values for the settings.
-    'number_integer' => array(
-      'label' => t('Default'),
-      'field types' => array('number_integer'),
-      'settings' =>  array(
-        'thousand_separator' => '',
-        // The 'decimal_separator' and 'scale' settings are not configurable
-        // through the UI, and will therefore keep their default values. They
-        // are only present so that the 'number_integer' and 'number_decimal'
-        // formatters can use the same code.
-        'decimal_separator' => '.',
-        'scale' => 0,
-        'prefix_suffix' => TRUE,
-      ),
-    ),
-    'number_decimal' => array(
-      'label' => t('Default'),
-      'field types' => array('number_decimal', 'number_float'),
-      'settings' =>  array(
-        'thousand_separator' => '',
-        'decimal_separator' => '.',
-        'scale' => 2,
-        'trim_leading' => '',
-		'trim_trailing' => '',
-		'trim_decimal' => '',
-        'prefix_suffix' => TRUE,
-      ),
-    ),
-    'number_unformatted' => array(
-      'label' => t('Unformatted'),
-      'field types' => array('number_integer', 'number_decimal', 'number_float'),
-    ),
-  );
+ * Implements hook_field_formatter_view().
+ */
+function endo_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  $settings = $display['settings'];
+
+  switch ($display['type']) {
+    case 'number_integer':
+      foreach ($items as $delta => $item) {
+        $element[$delta] = array('#markup' => _endo_render_integer($item['value'], $settings, $instance));
+      }
+      break;
+
+    case 'number_decimal':
+      foreach ($items as $delta => $item) {
+        $element[$delta] = array('#markup' => _endo_render_decimal($item['value'], $settings, $instance));
+      }
+      break;
+
+    case 'number_unformatted':
+      foreach ($items as $delta => $item) {
+        $element[$delta] = array('#markup' => $item['value']);
+      }
+      break;      
+  }
+  return $element;
 }
     
 /**
@@ -144,79 +194,28 @@ function endo_field_formatter_settings_form($field, $instance, $view_mode, $form
         '#default_value' => $settings['min_scale'],
         '#description' => t('The minimum number of digits to the right of the decimal, even if they are zeros.'),
       );	
-      $element['trim_leading'] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Suppress leading zero before decimal; e.g: output "0.12" as ".12"'),
-        '#default_value' => $settings['trim_leading'],
-      );
       $element['trim_trailing'] = array(
         '#type' => 'checkbox',
         '#title' => t('Suppress trailing zeros after decimal.'),
         '#default_value' => $settings['trim_trailing'],
         '#description' => t('Zeros will be trimmed off, only down to the Min. decimal places set above.'),
       );
+      $element['trim_leading'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Suppress leading zero before decimal; e.g: output "0.12" as ".12"'),
+        '#default_value' => $settings['trim_leading'],
+      );
       $element['trim_decimal'] = array(
         '#type' => 'checkbox',
         '#title' => t('Suppress decimal point for integer value; e.g: output "23." as "23"'),
         '#default_value' => $settings['trim_decimal'],
-        '#description' => t('This only affects if Min. decimal places (above) is set to zero.'),
+        '#description' => t('This only takes effect if Min. decimal places (above) is set to zero.'),
       );	
     }
   }
   return $element;
 }
 
-/**
- * Implements hook_field_formatter_view().
- */
-function endo_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
-  $element = array();
-  $settings = $display['settings'];
-  $point = $settings['decimal_separator'];
-
-  switch ($display['type']) {
-    case 'number_integer':
-    case 'number_decimal':
-//    case 'number_float':
-        
-      foreach ($items as $delta => $item) {
-        $output = number_format($item['value'], $settings['scale'], $settings['decimal_separator'], $settings['thousand_separator']);
-        if (isset($settings['zero_display']) && $item['value'] == 0) {
-          $output = $settings['zero_display'];	
-        }
-        else {
-          if (/*isset($settings['trim_leading']) && */ $settings['trim_leading']) $output = ltrim($output, "0");
-          if (/*isset($settings['trim_trailing']) && */ $settings['trim_trailing']) {
-            $output = rtrim($output, "0");
-            while (strlen($output) - strrpos($output, $point) <= $settings['min_scale']) $output = $output . '0';
-          }  
-          if (/*isset($settings['trim_decimal']) && */ $settings['trim_decimal']) $output = rtrim($output, $point);
-          if ($settings['neg_paren'] && $output < 0) {
-            $output = ltrim($output, "-");
-            $output = '(' . $output . ')';
-          }
-        }	
-        if ($settings['prefix_suffix']) {
-          $prefixes = isset($instance['settings']['prefix']) ? array_map('field_filter_xss', explode('|', $instance['settings']['prefix'])) : array('');
-          $suffixes = isset($instance['settings']['suffix']) ? array_map('field_filter_xss', explode('|', $instance['settings']['suffix'])) : array('');
-          $prefix = (count($prefixes) > 1) ? format_plural($item['value'], $prefixes[0], $prefixes[1]) : $prefixes[0];
-          $suffix = (count($suffixes) > 1) ? format_plural($item['value'], $suffixes[0], $suffixes[1]) : $suffixes[0];
-          $output = $prefix . $output . $suffix;
-        }
-        $element[$delta] = array('#markup' => $output);
-      }
-      break;
-
-    case 'number_unformatted':
-      foreach ($items as $delta => $item) {
-        $element[$delta] = array('#markup' => $item['value']);
-      }
-      break;
-      
-  }
-
-  return $element;
-}
 
 /**** The following are here for future development of the module. For now, they don't really do anything. ****/
 
