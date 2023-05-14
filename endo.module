@@ -11,15 +11,15 @@ function endo_field_formatter_info_alter(&$info) {
   $info['number_integer']['module'] = 'endo';
   $info['number_integer']['settings'] += array('zero_display' => '',
                                                'neg_paren' => '',
-		                                      );
+	                                      );
   $info['number_decimal']['module'] = 'endo';
   $info['number_decimal']['settings'] += array('trim_leading' => '',
-		                                       'trim_trailing' => '',
-		                                       'trim_decimal' => 'TRUE',
-		                                       'min_scale' => 0,
+	                                       'trim_trailing' => '',
+	                                       'trim_decimal' => 'TRUE',
+	                                       'min_scale' => 0,
                                                'zero_display' => '',
                                                'neg_paren' => '',
-		                                      );
+	                                      );
 }
 
 /**
@@ -34,7 +34,7 @@ function endo_field_formatter_settings_summary($field, $instance, $view_mode) {
     $sample_p = _endo_render_decimal(4321.1234567890, $settings, $instance);
     $sample_n = _endo_render_decimal(-4321.1234567890, $settings, $instance);
     $sample_z = _endo_render_decimal(0, $settings, $instance);
-    $summary[] = "$sample_p \u{3000}neg: $sample_n \u{3000}zero: $sample_z";
+    $summary[] = "$sample_p \u{3000}neg: $sample_n \u{3000}zero: $sample_z"; // "\u{3000}" is a wide space.
     $summary[] = t('Decimal places (max/min) = ') . $settings['scale'] . t(' / ') . $settings['min_scale'];
     if ($settings['trim_trailing']) $summary[] = t('Trailing zeros are suppressed');
     if ($settings['trim_leading']) $summary[] = t('Leading zero is suppressed');
@@ -44,7 +44,7 @@ function endo_field_formatter_settings_summary($field, $instance, $view_mode) {
     $sample_p = _endo_render_integer(4321.1234567890, $settings, $instance);
     $sample_n = _endo_render_integer(-4321.1234567890, $settings, $instance);
     $sample_z = _endo_render_integer(0, $settings, $instance);
-    $summary[] = "$sample_p \u{3000}neg: $sample_n \u{3000}zero: $sample_z"; // \u{3000} = wide space
+    $summary[] = "$sample_p \u{3000}neg: $sample_n \u{3000}zero: $sample_z"; // "\u{3000}" is a wide space
   }
   return implode('<br />', $summary);
 }
