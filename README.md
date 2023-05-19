@@ -49,7 +49,7 @@ this section if not needed (and consider disabling the wiki in the repo settings
 if not used).
 -->
 
-Additional documentation (once developed) will be located in the Wiki:
+Additional documentation is located in the Wiki:
 https://github.com/backdrop-contrib/endo/wiki/Documentation.
 
 Meanwhile, simply enable this module and notice the Enhance Number field
