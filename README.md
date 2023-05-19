@@ -50,7 +50,9 @@ if not used).
 -->
 
 Additional documentation is located in the Wiki:
-https://github.com/backdrop-contrib/endo/wiki/Documentation.
+https://github.com/backdrop-contrib/endo/wiki.
+
+
 
 Meanwhile, simply enable this module and notice the Enhance Number field
 Display Options which become available for integer and decimal fields.
