@@ -90,7 +90,7 @@ libraries, list them here. You can also mention any organisations/companies who
 sponsored the module's development.
 -->
 - This module was created for Backdrop by [ericfoy](https://github.com/ericfoy)
-- Sponsored by [Perideo LLC].
+- Sponsored by [Perideo LLC](https://perideo.com).
 
 
 License
