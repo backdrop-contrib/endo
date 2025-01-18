@@ -49,11 +49,15 @@ this section if not needed (and consider disabling the wiki in the repo settings
 if not used).
 -->
 
-Additional documentation (once developed) will be located in the Wiki:
-https://github.com/backdrop-contrib/endo/wiki/Documentation.
+Additional documentation is located in the Wiki:
+https://github.com/backdrop-contrib/endo/wiki.
+
+
 
 Meanwhile, simply enable this module and notice the Enhance Number field
 Display Options which become available for integer and decimal fields.
+
+![image](https://github.com/backdrop-contrib/endo/assets/60248933/933375bd-e765-4fe1-bffc-acafd58218a6)
 
 
 Issues
@@ -85,8 +89,8 @@ module. If this module is based on another project, or uses third-party
 libraries, list them here. You can also mention any organisations/companies who
 sponsored the module's development.
 -->
-
-- Sponsored by [Perideo LLC].
+- This module was created for Backdrop by [ericfoy](https://github.com/ericfoy)
+- Sponsored by [Perideo LLC](https://perideo.com).
 
 
 License
