@@ -5,17 +5,55 @@
  */
 
 /**
- * Upgrade from Drupal 7.
- * /
-function endo_update_1000() {
-  // Convert D7 variables to config.
-  $config = config('endo.settings');
-  $config->set('opinion_of_backdrop', update_variable_get('endo_opinion_drupal', 'Awesome!'));
-  $config->save();
+ * Implements hook_disable().
+ *
+ * Revert computed-field instances that are using number_integer/number_decimal
+ * (enabled via Endo's formatter alterations) back to a computed_field formatter
+ * so they still render after Endo is disabled.
+ */
+function endo_disable() {
+  // If Computed Field isn't enabled, there is nothing to fix.
+  if (!module_exists('computed_field')) {
+    return;
+  }
 
-  // Delete D7 variables.
-  update_variable_del('endo_opinion_drupal');
+  // Field CRUD helpers live in field.crud.inc.
+  module_load_include('inc', 'field', 'field.crud');
+
+  // Read all instances across all entity types/bundles. :contentReference[oaicite:2]{index=2}
+  $instances = field_read_instances();
+
+  foreach ($instances as $instance) {
+    if (empty($instance['display']) || !is_array($instance['display'])) {
+      continue;
+    }
+
+    // Only touch computed fields.
+    $field = field_read_field($instance['field_name']);
+    if (empty($field) || $field['type'] !== 'computed') {
+      continue;
+    }
+
+    $changed = FALSE;
+
+    foreach ($instance['display'] as $view_mode => &$display) {
+      if (empty($display['type'])) {
+        continue;
+      }
+
+      if ($display['type'] === 'number_integer' || $display['type'] === 'number_decimal') {
+        // Computed Field provides these formatter machine names. :contentReference[oaicite:3]{index=3}
+        $display['type'] = 'computed_field_plain';
+        // Keep $display['settings'] intact so if Endo is re-enabled later and the
+        // user switches back, their Endo settings may still be there.
+        $changed = TRUE;
+      }
+    }
+    unset($display);
+
+    if ($changed) {
+      // field_update_instance() clears relevant field caches. :contentReference[oaicite:4]{index=4}
+      field_update_instance($instance);
+    }
+  }
 }
-
-*/
-
